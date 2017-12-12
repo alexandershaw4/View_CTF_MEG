@@ -19,6 +19,16 @@ onset   = str2num(D.hist(o2+11:o2+16));
 offset  = str2num(D.hist(o2+9:o2+13));
 times   = onset:(1/D.res4.sample_rate):offset;
 
+if isempty(times);
+    NS = D.res4.no_samples;
+    SR = D.res4.sample_rate;
+    NT = D.res4.no_trials;
+    onset  = 0;
+    offset = NS/SR;
+    t = linspace(onset,offset,NS);
+    times = t;
+end
+
 info.Labels = Labels;
 info.EEGid  = EEGid;
 info.MEGid  = MEGid;

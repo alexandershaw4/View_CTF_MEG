@@ -72,6 +72,9 @@ function listbox1_Callback(hObject, eventdata, handles)
 
 contents = cellstr(get(hObject,'String'));
 trial = contents{get(hObject,'Value')};
+%if isempty(trial);
+%    trial = 1;
+%end
 tr_id = find(strcmp(handles.Markers.marker_names,trial));
 handles.tr_id = tr_id;
 
@@ -133,7 +136,8 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 handles.Dataset = uigetdir('pwd','Select CTF .ds Dataset');
 
 % Load Data & Info
-[handles.Data,handles.times,handles.Markers,handles.D,handles.info] = CTF_ViewLight(handles.Dataset);
+[handles.Data,handles.times,handles.Markers,handles.D,handles.info] = ...
+    CTF_ViewLight(handles.Dataset);
 
 % Get marker names
 Mrks = handles.Markers.marker_names;
@@ -143,8 +147,13 @@ set(handles.listbox1, 'String', Mrks)
 
 % get bad indices
 BAD  = find(strcmp(Mrks,'BAD'));
-BADi = handles.Markers.trial_times{BAD};
-BADi = BADi(:,1);
+try
+    BADi = handles.Markers.trial_times{BAD};
+    BADi = BADi(:,1);
+catch
+    % if there aren't any bad, YET!
+    BADi = [];
+end
 BAD  = zeros(1,size(handles.Data,3))';
 handles.BAD = BAD;
 handles.BAD(BADi) = 1;
@@ -196,10 +205,18 @@ function pushbutton3_Callback(hObject, eventdata, handles)
 %         if i > 1; scl(i) = scl(i) + scl(i-1); end
 % end
 
+%if no trial clcked on, assume 1
+% try handles.ind;
+% catch
+%     handles.ind = 1;
+%     listbox1_Callback(hObject, eventdata, handles)
+% end
+
 MEGid = handles.info.MEGid;
 EEGid = handles.info.EEGid;
 
 prewhite = TSNorm(squeeze(handles.plotdata(:,:,round(handles.ind))),1,1,1);
+prewhite(isnan(prewhite)) = 0;
 
 for i = 1:handles.nch
     this = (i)+(handles.SCALE*squeeze(prewhite(i,:)));
@@ -215,7 +232,8 @@ ylim([1 handles.nch]);
 CH = cellstr(handles.info.Labels);
 set(gca,'YTick',1:length(CH),'YTickLabel',CH);
 xlabel('Time (s)');
-title(sprintf('Trial %d of %d for trial type %s',round(handles.ind),handles.ntr,handles.Markers.marker_names{handles.tr_id}));
+title(sprintf('Trial %d of %d for trial type %s',round(handles.ind),...
+    handles.ntr,handles.Markers.marker_names{handles.tr_id}));
 hold off;
 
 guidata(hObject, handles);
