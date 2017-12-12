@@ -308,30 +308,17 @@ function pushbutton5_Callback(hObject, eventdata, handles)
 
 % Topography view!
 
-% get this trial data
-MEGid = handles.info.MEGid;
-EEGid = handles.info.EEGid;
-
-prewhite = TSNorm(squeeze(handles.plotdata(:,:,round(handles.ind))),1,1,1);
-prewhite(isnan(prewhite)) = 0;
-
-trial_data = mean(prewhite(MEGid,:),2);
-
 % setup with fieldtrip (CTF layout)
-try handles.thelay;
-catch
-    cfg.layout = 'CTF275.lay';
-    thelay     = ft_prepare_layout(cfg);
-    handles.thelay = thelay;
-end
+cfg.layout = 'CTF275.lay';
+thelay     = ft_prepare_layout(cfg);
 
-x   = handles.thelay.pos(1:length(MEGid),1);
-y   = handles.thelay.pos(1:length(MEGid),2);
+MEGid  = cat(1,handles.D.res4.senres.sensorTypeIndex);
+x   = thelay.pos(1:length(MEGid),1);
+y   = thelay.pos(1:length(MEGid),2);
 tri = delaunay(x,y);
-trisurf(tri,x,y,trial_data);
-shading interp; view(0,90);
+trisurf(tri,x,y,trialdata);
+shading interp; view(0,90);caxis([ylm(1) ylm(2)]);
 set(gca,'visible','off');
 
-guidata(hObject, handles);
 
 
